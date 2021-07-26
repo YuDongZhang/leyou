@@ -17,3 +17,5 @@ eureka:
   instance:
     lease-renewal-interval-in-seconds: 5 # 5秒钟发送一次心跳
     lease-expiration-duration-in-seconds: 10 # 10秒不发送就过期
+mybatis:
+  type-aliases-package: com.leyou.item.pojo #在 leyou-item-interface中创建包
