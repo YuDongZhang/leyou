@@ -54,7 +54,7 @@ public class BrandController {
      * @param brand
      * @param cids
      */
-    @PostMapping //运行测试提交 {name:heima,image:"",cids:"76,77",letter:"H"},这个地方封装是失败的
+    @PostMapping                        //作为普通对象接收不需要@requestBody,作为json需要,前端改了,对应的是 10号
     public ResponseEntity<Void> saveBrand(Brand brand, @RequestParam("cids") List<Long> cids) {
         this.brandService.saveBrand(brand, cids);
         return ResponseEntity.status(HttpStatus.CREATED).build();
