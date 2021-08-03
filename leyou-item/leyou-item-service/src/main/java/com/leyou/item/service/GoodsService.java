@@ -14,7 +14,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Arrays;
@@ -150,35 +149,31 @@ public class GoodsService {
     }
 
     @Transactional
-    public void updateGoods(SpuBo spu) {
-        // 查询以前sku
-        List<Sku> skus = this.querySkusBySpuId(spu.getId());
-        // 如果以前存在，则删除
-        if(!CollectionUtils.isEmpty(skus)) {
-            List<Long> ids = skus.stream().map(s -> s.getId()).collect(Collectors.toList());
-            // 删除以前库存
-            Example example = new Example(Stock.class);
-            example.createCriteria().andIn("skuId", ids);
-            this.stockMapper.deleteByExample(example);
+    public void updateGoods(SpuBo spuBo) {
+        //根据spuid查询要删除的sku
+        Sku record = new Sku();
+        record.setSpuId(spuBo.getId());
+        List<Sku> skus = this.skuMapper.select(record);
+        skus.forEach(s -> {
+            //删除 stock
+            this.stockMapper.selectByPrimaryKey(s.getId());
+        });
 
-            // 删除以前的sku
-            Sku record = new Sku();
-            record.setSpuId(spu.getId());
-            this.skuMapper.delete(record);
+        Sku sku = new Sku();
+        //删除 sku
+        record.setSpuId(sku.getId());
+        this.skuMapper.delete(sku);
 
-        }
-        // 新增sku和库存
-        saveSkuAndStock(spu);
+        //新增sku 新增stock
+        this.saveSkuAndStock(spuBo);
 
-        // 更新spu
-        spu.setLastUpdateTime(new Date());
-        spu.setCreateTime(null);
-        spu.setValid(null);
-        spu.setSaleable(null);
-        this.spuMapper.updateByPrimaryKeySelective(spu);
-
-        // 更新spu详情
-        this.spuDetailMapper.updateByPrimaryKeySelective(spu.getSpuDetail());
+        //更新spu和spudetail  //设置为null都是不让更新的
+        spuBo.setCreateTime(null);//这个时间不改
+        spuBo.setLastUpdateTime(new Date());
+        spuBo.setValid(null);
+        spuBo.setSaleable(null);
+        this.spuMapper.updateByPrimaryKeySelective(spuBo);
+        this.spuDetailMapper.updateByPrimaryKeySelective(spuBo.getSpuDetail());
     }
 
 }
