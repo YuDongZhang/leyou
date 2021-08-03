@@ -1,0 +1,11 @@
+要配置 另外一个用户 在centos leyou  密码 :acer8888
+
+学习安装 Elasticsearch
+线程数不够,和笔记不一样
+ /etc/security/limits.d/20-nproc.conf
+这个需要根据教程一步步操作
+
+
+ 学习安装
+ 安装kibana
+根据教程一步步操作
