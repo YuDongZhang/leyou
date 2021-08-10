@@ -39,7 +39,7 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @GetMapping("names")
+    @GetMapping//老师讲的这里没有names
     public ResponseEntity<List<String>> queryNamesByIds(@RequestParam("ids")List<Long> ids){
 
         List<String> names = this.categoryService.queryNamesByIds(ids);

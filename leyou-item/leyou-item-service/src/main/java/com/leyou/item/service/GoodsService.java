@@ -176,4 +176,6 @@ public class GoodsService {
         this.spuDetailMapper.updateByPrimaryKeySelective(spuBo.getSpuDetail());
     }
 
+
+
 }
