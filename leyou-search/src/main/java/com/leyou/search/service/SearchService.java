@@ -11,10 +11,11 @@ import com.leyou.search.pojo.Goods;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-
+@Service
 public class SearchService {
 
     @Autowired
