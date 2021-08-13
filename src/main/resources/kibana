@@ -1,0 +1,86 @@
+GET _search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+PUT /heima
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  }
+}
+
+GET /heima
+
+PUT heima/_mapping/goods
+{
+  "properties": {
+    "title": {
+      "type": "text",
+      "analyzer": "ik_max_word"
+    },
+    "images": {
+      "type": "keyword",
+      "index": "false"
+    },
+    "price": {
+      "type": "float"
+    }
+  }
+}
+
+
+POST /heima/goods/3
+{
+    "title":"大米电视",
+    "images":"http://image.leyou.com/12479122.jpg",
+    "price":1199.00
+}
+
+GET /heima/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+GET heima/_search
+{
+  "query": {
+    "match": {
+      "title": {
+        "query": "小米手机"
+        , "operator": "and"
+
+      }
+    }
+  }
+}
+
+GET /item/_mapping
+
+GET item/_search
+
+GET /goods/_search
+
+GET /goods/_search
+{
+  "size": 0,
+  "aggs": {
+    "brands": {
+      "terms": {
+        "field": "cid3"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
