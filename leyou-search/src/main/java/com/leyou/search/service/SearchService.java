@@ -108,7 +108,9 @@ public class SearchService {
                 // 把参数名和值放入结果集中
                 paramMap.put(param.getName(), value);
             } else {
-                paramMap.put(param.getName(), specialSpecMap.get(param.getId().toString()));//这里和老师保持一致
+                paramMap.put(param.getName(), specialSpecMap.get(param.getId()));//查看笔记
+                //坑: https://blog.csdn.net/SleepNot_Need/article/details/107650039
+                // https://blog.csdn.net/u010553867/article/details/104452764
             }
         });
 
