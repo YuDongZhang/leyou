@@ -13,6 +13,7 @@ import com.leyou.search.pojo.SearchResult;
 import com.leyou.search.repository.GoodsRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -176,7 +177,8 @@ public class SearchService {
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
 
         // 1、对key进行全文检索查询
-        QueryBuilder basicQuery = QueryBuilders.matchQuery("all", key).operator(Operator.AND);
+       // QueryBuilder basicQuery = QueryBuilders.matchQuery("all", key).operator(Operator.AND);
+        BoolQueryBuilder basicQuery =  buildBoolQueryBuilder(request);
         queryBuilder.withQuery(basicQuery);
 
         // 2、通过sourceFilter设置返回的结果字段,我们只需要id、skus、subTitle .添加结果集过滤
@@ -210,6 +212,36 @@ public class SearchService {
 
         // 封装结果并返回
         return new SearchResult(goodsPage.getTotalElements(), goodsPage.getTotalPages(), goodsPage.getContent(),categories,brands,specs);
+    }
+
+    private BoolQueryBuilder buildBoolQueryBuilder(SearchRequest request) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        // 添加基本查询条件
+        boolQueryBuilder.must(QueryBuilders.matchQuery("all", request.getKey()).operator(Operator.AND));
+
+        // 添加过滤条件
+        if (CollectionUtils.isEmpty(request.getFilter())){
+            return boolQueryBuilder;
+        }
+        for (Map.Entry<String, Object> entry : request.getFilter().entrySet()) {
+
+            String key = entry.getKey();
+            // 如果过滤条件是“品牌”, 过滤的字段名：brandId
+            if (StringUtils.equals("品牌", key)) {
+                key = "brandId";
+            } else if (StringUtils.equals("分类", key)) {
+                // 如果是“分类”，过滤字段名：cid3
+                key = "cid3";
+            } else {
+                // 如果是规格参数名，过滤字段名：specs.key.keyword
+                key = "specs." + key + ".keyword";
+            }
+            boolQueryBuilder.filter(QueryBuilders.termQuery(key, entry.getValue()));
+        }
+
+        return boolQueryBuilder;
+
     }
 
     /**

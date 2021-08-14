@@ -90,7 +90,25 @@ GET /goods/_search
   }
 }
 
-
+GET /goods/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "all": "手机"
+          }
+        }
+      ],
+      "filter": {
+        "term": {
+          "specs.CPU核数.keyword": "十核"
+        }
+      }
+    }
+  }
+}
 
 
 
