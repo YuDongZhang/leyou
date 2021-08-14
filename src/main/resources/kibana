@@ -78,7 +78,17 @@ GET /goods/_search
   }
 }
 
-
+GET /goods/_search
+{
+  "size": 0,
+  "aggs": {
+    "CPU核数": {
+      "terms": {
+        "field": "specs.CPU核数.keyword"
+      }
+    }
+  }
+}
 
 
 

@@ -14,16 +14,19 @@ import com.leyou.search.repository.GoodsRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -171,7 +174,8 @@ public class SearchService {
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
 
         // 1、对key进行全文检索查询
-        queryBuilder.withQuery(QueryBuilders.matchQuery("all", key).operator(Operator.AND));
+        QueryBuilder basicQuery = QueryBuilders.matchQuery("all", key).operator(Operator.AND);
+        queryBuilder.withQuery(basicQuery);
 
         // 2、通过sourceFilter设置返回的结果字段,我们只需要id、skus、subTitle .添加结果集过滤
         queryBuilder.withSourceFilter(new FetchSourceFilter(
@@ -196,10 +200,104 @@ public class SearchService {
         // 解析聚合结果集  分类和品牌
         List<Map<String, Object>> categories = getCategoryAggResult(goodsPage.getAggregation(categoryAggName));
         List<Brand> brands = getBrandAggResult(goodsPage.getAggregation(brandAggName));
-
+        List<Map<String, Object>> specs=null;
+        // 判断分类聚合的结果集大小，等于1则聚合
+        if (!CollectionUtils.isEmpty(categories)&&categories.size() == 1) {
+            specs = getParamAggResult((Long)categories.get(0).get("id"), basicQuery);
+        }
 
         // 封装结果并返回
-        return new SearchResult(goodsPage.getTotalElements(), goodsPage.getTotalPages(), goodsPage.getContent(),categories,brands);
+        return new SearchResult(goodsPage.getTotalElements(), goodsPage.getTotalPages(), goodsPage.getContent(),categories,brands,specs);
+    }
+
+    /**
+     * 根据查询条件聚合规格参数
+     * @param cid
+     * @param basicQuery
+     * @return
+     */
+    /*
+    "aggregations": {
+    "CPU核数": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "八核",
+          "doc_count": 142
+        },
+        {
+          "key": "四核",
+          "doc_count": 20
+        },
+        {
+          "key": "其他",
+          "doc_count": 9
+        },
+        {
+          "key": "十核",
+          "doc_count": 3
+        },
+        {
+          "key": "八核 + 微智核i6",
+          "doc_count": 2
+        },
+        {
+          "key": "六核",
+          "doc_count": 2
+        },
+        {
+          "key": "四核+四核",
+          "doc_count": 2
+        },
+        {
+          "key": "12",
+          "doc_count": 1
+        },
+        {
+          "key": "CPU核数八核 + 微智核i7",
+          "doc_count": 1
+        }
+      ]
+    }
+     */
+    private List<Map<String, Object>> getParamAggResult(Long cid, QueryBuilder basicQuery) {
+
+        // 创建自定义查询构建器
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        // 基于基本的查询条件，聚合规格参数
+        queryBuilder.withQuery(basicQuery);
+        // 查询要聚合的规格参数
+        List<SpecParam> params = this.specificationClient.queryParams(null, cid, null, true);
+        // 添加聚合
+        params.forEach(param -> {                                                       //"specs.CPU核数.keyword"
+            queryBuilder.addAggregation(AggregationBuilders.terms(param.getName()).field("specs." + param.getName() + ".keyword"));
+        });
+        // 只需要聚合结果集，不需要查询结果集
+        queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{}, null));
+
+        // 执行聚合查询
+        AggregatedPage<Goods> goodsPage = (AggregatedPage<Goods>)this.goodsRepository.search(queryBuilder.build());
+
+        // 定义一个集合，收集聚合结果集
+        List<Map<String, Object>> paramMapList = new ArrayList<>();
+        // 解析聚合查询的结果集 key-聚合名称(规格参数名) value - 聚合对象
+        Map<String, Aggregation> aggregationMap = goodsPage.getAggregations().asMap();
+        for (Map.Entry<String, Aggregation> entry : aggregationMap.entrySet()) {
+            Map<String, Object> map = new HashMap<>();
+            // 放入规格参数名
+            map.put("k", entry.getKey());
+            // 收集规格参数值
+            List<Object> options = new ArrayList<>();
+            // 解析每个聚合
+            StringTerms terms = (StringTerms)entry.getValue();
+            // 遍历每个聚合中桶，把桶中key放入收集规格参数的集合中
+            terms.getBuckets().forEach(bucket -> options.add(bucket.getKeyAsString()));
+            map.put("options", options);//其实就是注释中的key
+            paramMapList.add(map);
+        }
+
+        return paramMapList;
     }
 
     /**
