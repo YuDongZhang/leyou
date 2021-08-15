@@ -55,7 +55,7 @@ public class GoodsService {
         List<SpecGroup> groups = this.specificationClient.querySpecsWithParam(spu.getCid3());
 
         // 查询特殊的规格参数
-        List<SpecParam> params = this.specificationClient.queryParams(null, spu.getCid3(), null, false);
+        List<SpecParam> params = this.specificationClient.queryParams(null, spu.getCid3(), false, null);//这里笔记中有错查出的数据不对
         Map<Long, String> paramMap = new HashMap<>();
         params.forEach(param -> {
             paramMap.put(param.getId(), param.getName());
