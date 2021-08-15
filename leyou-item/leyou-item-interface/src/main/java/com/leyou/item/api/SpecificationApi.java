@@ -27,5 +27,5 @@ public interface SpecificationApi {
     );
 
     @GetMapping("group/param/{cid}")
-    public List<SpecGroup> querySpecsByCid(@PathVariable("cid") Long cid);
+    public List<SpecGroup> querySpecsWithParam(@PathVariable("cid") Long cid);
 }

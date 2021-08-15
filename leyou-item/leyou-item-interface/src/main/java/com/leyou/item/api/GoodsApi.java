@@ -39,5 +39,6 @@ public interface GoodsApi {
      * @param id
      * @return
      */
+    @GetMapping("{id}")
     public Spu querySpuById(@PathVariable("id") Long id);
 }
