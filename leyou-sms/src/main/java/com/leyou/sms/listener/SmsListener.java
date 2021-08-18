@@ -29,7 +29,7 @@ public class SmsListener {
             value = @Queue(value = "leyou.sms.queue", durable = "true"),
             exchange = @Exchange(value = "leyou.sms.exchange",
                     ignoreDeclarationExceptions = "true",type = ExchangeTypes.TOPIC),
-            key = {"verifycode_sms"}))
+            key = {"verifycode.sms"}))
     public void listenSms(Map<String, String> msg) throws Exception {
         if (msg == null || msg.size() <= 0) {
             // 放弃处理
