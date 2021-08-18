@@ -13,3 +13,4 @@ zuul:
   routes:
     item-service: /item/** # 商品微服务的映射路径
     search-service: /search/** # 路由到搜索的微服务  //这个地方是ctrl+d 复制上面的报错,查了很久教训
+    user-service: /user/**
