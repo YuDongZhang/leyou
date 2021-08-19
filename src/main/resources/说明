@@ -12,3 +12,6 @@ http://192.168.20.156:9200/ 请求数据成功
 根据教程一步步操作
 http://localhost:5601/ 请求数据成功
 以后就用 kibana 工具,和上一步请求的数据一样,但是更加的友好
+
+nginx:
+ 在 api.leyou.com 添加这个 proxy_set_header Host $host;

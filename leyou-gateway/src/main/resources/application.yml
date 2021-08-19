@@ -15,3 +15,5 @@ zuul:
     search-service: /search/** # 路由到搜索的微服务  //这个地方是ctrl+d 复制上面的报错,查了很久教训
     user-service: /user/**
     auth-service: /auth/** # 授权中心微服务
+  add-host-header: true
+  sensitive-headers: #覆盖默认敏感头信息
