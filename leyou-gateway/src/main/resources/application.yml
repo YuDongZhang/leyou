@@ -17,3 +17,7 @@ zuul:
     auth-service: /auth/** # 授权中心微服务
   add-host-header: true
   sensitive-headers: #覆盖默认敏感头信息
+leyou:
+  jwt:
+    pubKeyPath: C:\\tmp\\rsa\\rsa.pub # 公钥地址
+    cookieName: LY_TOKEN
