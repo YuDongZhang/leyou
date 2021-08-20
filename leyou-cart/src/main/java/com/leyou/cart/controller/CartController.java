@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -41,5 +42,11 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(carts);
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> updateNum(@RequestBody Cart cart){
+        this.cartService.updateCarts(cart);
+        return ResponseEntity.noContent().build();
     }
 }

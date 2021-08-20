@@ -83,4 +83,22 @@ public class CartService {
         // 查询购物车数据   把list<object>集合转化为 list<Cart>集合
         return carts.stream().map(o -> JsonUtils.parse(o.toString(), Cart.class)).collect(Collectors.toList());
     }
+
+
+    public void updateCarts(Cart cart) {
+        // 获取登陆信息
+        UserInfo userInfo = LoginInterceptor.getLoginUser();
+        String key = KEY_PREFIX + userInfo.getId();
+
+        Integer num = cart.getNum();
+        // 获取hash操作对象
+        BoundHashOperations<String, Object, Object> hashOperations = this.redisTemplate.boundHashOps(key);
+        // 获取购物车信息
+        String cartJson = hashOperations.get(cart.getSkuId().toString()).toString();
+        cart = JsonUtils.parse(cartJson, Cart.class);
+        // 更新数量
+        cart.setNum(num);
+        // 写入购物车
+        hashOperations.put(cart.getSkuId().toString(), JsonUtils.serialize(cart));
+    }
 }
