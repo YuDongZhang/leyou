@@ -655,7 +655,10 @@
 		methods:{
 			addCart(){
 				ly.verify().then(res=>{
-					// 已登录发送信息到后台，保存到redis中
+					// 已登录发送信息到后台，保存到redis中 //本来要传cart对象,但是cart可以通过 skuid去查就可以省一点
+					ly.http.post("/cart",{skuId: this.sku.id,num:this.num}).then(res=>{
+						window.location  = "http://www.leyou.com/cart.html";
+					})
 				}).catch(()=>{
 					// 未登录保存在浏览器本地的localStorage中
 					// 1、查询本地购物车
