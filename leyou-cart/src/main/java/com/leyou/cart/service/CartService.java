@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -56,5 +60,27 @@ public class CartService {
         }
         // 将购物车数据写入redis
         hashOps.put(cart.getSkuId().toString(), JsonUtils.serialize(cart));
+    }
+
+
+    public List<Cart> queryCartList() {
+        // 获取登录用户
+        UserInfo user = LoginInterceptor.getLoginUser();
+
+        // 判断是否存在购物车
+        String key = KEY_PREFIX + user.getId();
+        if(!this.redisTemplate.hasKey(key)){
+            // 不存在，直接返回
+            return null;
+        }
+        BoundHashOperations<String, Object, Object> hashOps = this.redisTemplate.boundHashOps(key);
+        //获取购物所有的cart集合
+        List<Object> carts = hashOps.values();
+        // 判断是否有数据//购物车集合为空
+        if(CollectionUtils.isEmpty(carts)){
+            return null;
+        }
+        // 查询购物车数据   把list<object>集合转化为 list<Cart>集合
+        return carts.stream().map(o -> JsonUtils.parse(o.toString(), Cart.class)).collect(Collectors.toList());
     }
 }
